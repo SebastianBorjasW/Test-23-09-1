@@ -76,7 +76,7 @@ class CNN_Net(nn.Module):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 CNN = CNN_Net().to(device)
 parameters = CNN.parameters()
-
+criterion = nn.CrossEntropyLoss()
 #Uso del optimizador Adam
 optimizer = optim.Adam(parameters, lr=0.003)
 
@@ -84,3 +84,27 @@ optimizer = optim.Adam(parameters, lr=0.003)
 train_loader = DataLoader(train_set, batch_size=70)
 valid_loader = DataLoader(valid_set, batch_size=1)
 
+#Entrenamiento del modelo
+def train_Model(model, train_loader, valid_loader, criterion, optimizer, device):
+    num_epochs = 5
+    for epoch in range(num_epochs):
+        train_loss = 0.0
+        valid_loss = 0.0
+        model.train()
+        for i, (img, target) in enumerate(train_loader):
+            img = img.to(device)
+            target = target.to(device)
+            optimizer.zero_grad()
+            output = model(img)
+
+            loss = criterion(output, target)
+            loss.backward()
+            optimizer.step()
+            train_loss += loss.item() * img.size(0)
+        model.eval()
+        train_loss = train_loss / len(train_loader.sampler)
+        valid_loss = valid_loss / len(valid_loader.sampler)
+
+
+
+            
