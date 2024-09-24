@@ -74,8 +74,8 @@ class CNN_Net(nn.Module):
         return num_features
     
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-CNN = CNN_Net().to(device)
-parameters = CNN.parameters()
+cnn = CNN_Net().to(device)
+parameters = cnn.parameters()
 criterion = nn.CrossEntropyLoss()
 #Uso del optimizador Adam
 optimizer = optim.Adam(parameters, lr=0.003)
@@ -105,6 +105,41 @@ def train_Model(model, train_loader, valid_loader, criterion, optimizer, device)
         train_loss = train_loss / len(train_loader.sampler)
         valid_loss = valid_loss / len(valid_loader.sampler)
 
+def accuracy(model, test_sample, device):
+    correct = 0
+    total = 0
+    model.to(device)
+    dataiter = iter(test_sample)
+    with torch.no_grad():
+        for data in dataiter:
+            img, label = data
+            output = model(img)
+            _, predicted = torch.max(output.data, 1)
+        total += label.size(0)
+        correct += (predicted == label).sum().item()
+    print(f"Accuracy: {100*correct / total}")
+
+
+def accuracy_per_label(model, test_sample, classes, device):
+    class_correct = list(0. for i in range(10))
+    class_total = list(0. for i in range(10))
+    cnn.to(device)
+    with torch.no_grad():
+        for data in test_sample:
+            images, labels = data
+            images = images.to(device)
+            labels = labels.to(device)
+            outputs = cnn(images)
+            _, predicted = torch.max(outputs, 1)
+            c = (predicted == labels).squeeze()
+            if(c.item()):
+                class_correct[labels.item()] += 1
+            class_total[labels.item()] += 1
+    for i in range(10):
+        print(f"{classes[i]} | Correct: {class_correct[i]} | Total: {class_total[i]}" +
+              f"| Accuracy: {class_correct[i] / class_total[i]}")
+        
+    
 
 
             
