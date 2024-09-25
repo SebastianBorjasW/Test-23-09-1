@@ -183,6 +183,8 @@ test_folder = './Test'
 for image in os.listdir(test_folder):
     if image.endswith(('.jpg', '.jpeg', '.png')):
         image_path = os.path.join(test_folder, image)
+
         predicted_class = predict_image(image_path, cnn)
+        
         predicted_name = class_names[predicted_class]
         print(f"Imagen: {image} -> Inferencia: {predicted_name}")
