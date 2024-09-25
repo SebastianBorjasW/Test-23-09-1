@@ -15,12 +15,16 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from sklearn.metrics import confusion_matrix
 import seaborn as sb
+from matplotlib import style
+style.use('seaborn-v0_8-whitegrid')
 
 #Carga de imagenes 
 transform = transforms.Compose([transforms.Resize((224,224)),
                                 transforms.ToTensor(),
                                 transforms.Normalize((0.5,0.5,0.5),
                                                      (0.5,0.5,0.5))])
+
+
 dataset = ImageFolder('./Dataset/raw-img', transform = transform)
 classes = dataset.classes
 data_loader = DataLoader(dataset, batch_size=20, shuffle=True)
@@ -160,6 +164,11 @@ class Classifier(nn.Module):
     def __init__(self):
         super(Classifier, self).__init__()
         self.resnet = models.resnet50(weights=ResNet50_Weights.IMAGENET1K_V2)
+
+        #Congelar capas del modelo
+        for param in self.resnet.parameters():
+            param.requires_grad = False
+
         self.resnet.fc = nn.Linear(self.resnet.fc.in_features, 10)
 
     def forward(self, image):
@@ -205,13 +214,15 @@ def plot_confusion_matrix(model, test_loader, classes, device):
 
 YN = input("Entrenar el modelo? y/N ")
 if(YN == 'y'):
+    name = input("Escriba el nombre del modelo: ")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     cnn = Classifier().to(device)
     criterion = nn.CrossEntropyLoss()
     parameters = cnn.resnet.fc.parameters()
-    optimizer = optim.Adam(parameters, lr= 0.003)
+    optimizer = optim.Adam(cnn.resnet.fc.parameters(), lr= 0.003)
     train_losses, valid_losses = train_Model(cnn, train_loader, valid_loader,criterion, optimizer, device)
     plotGraphLearning(train_losses, valid_losses)
+    torch.save(cnn.state_dict(), name)
 else :
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     cnn = Classifier().to(device)
