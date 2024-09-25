@@ -1,5 +1,6 @@
 import torch
 import os
+import time
 import torchvision
 from torchvision.datasets import ImageFolder
 from torchvision import transforms
@@ -173,9 +174,14 @@ def predict_image(image_path, model):
 
     with torch.no_grad():
         output = model(image)
-        _, predicted = torch.max(output, 1)
+        probabilities = torch.softmax(output, dim=1)
+        predicted = torch.argmax(probabilities).item()
+        max_probability = probabilities[0][predicted].item()
 
-    return predicted.item()
+    return predicted, max_probability, probabilities
+
+
+confidence = 0.6
 
 
 test_folder = './Test'
@@ -184,7 +190,28 @@ for image in os.listdir(test_folder):
     if image.endswith(('.jpg', '.jpeg', '.png')):
         image_path = os.path.join(test_folder, image)
 
-        predicted_class = predict_image(image_path, cnn)
-        
-        predicted_name = class_names[predicted_class]
-        print(f"Imagen: {image} -> Inferencia: {predicted_name}")
+        start_time = time.time()
+        #Manejar errores 
+        try:
+            predicted, max_probability, probabilities = predict_image(image_path, cnn)
+            inference_time = time.time() - start_time
+
+            # Mostrar todas las probabilidades de clases
+            print(f"Imagen: {image} -> Probabilidades:")
+            for i, class_name in enumerate(class_names):
+                prob = probabilities[0][i].item()
+                print(f"  {class_name}: {prob:.4f}")
+
+            if max_probability < confidence:
+                suggested_classes = probabilities[0].topk(3)
+                suggested_classes_names = [class_names[i] for i in suggested_classes.indices]
+                suggested_classes_probs = suggested_classes.values.cpu().numpy()
+                suggestions = ', '.join([f"{name} ({prob:.2f})" for name, prob in zip(suggested_classes_names, suggested_classes_probs)])
+                print(f" -> Podría ser: {suggestions} (Tiempo: {inference_time:.4f} segundos)")
+            else:
+                pred = class_names[predicted]
+                print(f" -> Inferencia: {pred} (Probabilidad: {max_probability:.4f}, Tiempo de inferencia: {inference_time:.4f} segundos)")
+            
+        except Exception as e:
+            print("Error leyendo la imagen:", e)
+
