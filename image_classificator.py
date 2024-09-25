@@ -84,6 +84,8 @@ test_loader = DataLoader(test_sample, batch_size=1)
 def train_Model(model, train_loader, valid_loader, criterion, optimizer, device):
     total_step = len(train_loader)
     num_epochs = 10
+    train_losses = []
+    valid_losses = []
     for epoch in range(num_epochs):
         train_loss = 0.0
         valid_loss = 0.0
@@ -106,8 +108,14 @@ def train_Model(model, train_loader, valid_loader, criterion, optimizer, device)
             valid_loss += loss.item() * data.size(0)
         train_loss = train_loss / len(train_loader.sampler)
         valid_loss = valid_loss / len(valid_loader.sampler)
+
+        train_losses.append(train_loss)
+        valid_losses.append(valid_loss)
+
         print('Epoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(
           epoch, train_loss, valid_loss))
+        
+    return train_losses, valid_losses
 
 def accuracy(model, test_loader):
     correct = 0
@@ -144,6 +152,7 @@ def accuracy_per_label(model, test_loader, classes, device):
               f"| Accuracy: {class_correct[i] / class_total[i]}")
         
 
+
 #Hacer transfer learning con un modelo pre entrenado
 class Classifier(nn.Module):
     def __init__(self):
@@ -157,58 +166,81 @@ class Classifier(nn.Module):
     
 
 
-
-#Realizar inferencia del modelo
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-cnn = Classifier().to(device)
-cnn.load_state_dict(torch.load('cnnV2.pt', weights_only=True))
-cnn.eval()
-
-class_names = classes
-
-
-def predict_image(image_path, model):
-    image = Image.open(image_path)
-    image = transform(image).unsqueeze(0)
-    image = image.to(device)
-
-    with torch.no_grad():
-        output = model(image)
-        probabilities = torch.softmax(output, dim=1)
-        predicted = torch.argmax(probabilities).item()
-        max_probability = probabilities[0][predicted].item()
-
-    return predicted, max_probability, probabilities
+def plotGraphLearning(train_losses, valid_losses):
+    plt.figure(figsize=(10,5))
+    plt.plot(train_losses, label='Entrenamiento')
+    plt.plot(valid_losses, label='Validación')
+    plt.title('Curva de aprendizaje')
+    plt.xlabel('Época')
+    plt.ylabel('Perida')
+    plt.legend()
+    plt.show()
 
 
-confidence = 0.9
 
 
-test_folder = './Test'
+YN = input("Entrenar el modelo? y/N ")
+if(YN == 'y'):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    cnn = Classifier().to(device)
+    criterion = nn.CrossEntropyLoss()
+    parameters = cnn.resnet.fc.parameters()
+    optimizer = optim.Adam(parameters, lr= 0.003)
+    train_losses, valid_losses = train_Model(cnn, train_loader, valid_loader,criterion, optimizer, device)
+    plotGraphLearning(train_losses, valid_losses)
+else :
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    cnn = Classifier().to(device)
+    
+    #Realizar inferencia del modelo
+    cnn.load_state_dict(torch.load('cnnV2.pt', weights_only=True))
+    cnn.eval()
 
-for image in os.listdir(test_folder):
-    if image.endswith(('.jpg', '.jpeg', '.png')):
-        image_path = os.path.join(test_folder, image)
+    class_names = classes
 
-        start_time = time.time()
-        #Manejar errores 
-        try:
-            predicted, max_probability, probabilities = predict_image(image_path, cnn)
-            inference_time = time.time() - start_time
 
-            # Mostrar todas las probabilidades de clases
-            print(f"Imagen: {image} -> Probabilidades:")
-            for i, class_name in enumerate(class_names):
-                prob = probabilities[0][i].item()
-                print(f"  {class_name}: {prob:.4f}")
+    def predict_image(image_path, model):
+        image = Image.open(image_path)
+        image = transform(image).unsqueeze(0)
+        image = image.to(device)
 
-            if max_probability < confidence:
-                # Si la probabilidad máxima está por debajo del umbral
-                print(f" -> No puedo inferir sobre esta imagen. Probabilidades insuficientes (Máxima: {max_probability:.4f})")
-            else:
-                pred = class_names[predicted]
-                print(f" -> Inferencia: {pred} (Probabilidad: {max_probability:.4f}, Tiempo de inferencia: {inference_time:.4f} segundos)")
-            
-        except Exception as e:
-            print("Error leyendo la imagen:", e)
+        with torch.no_grad():
+            output = model(image)
+            probabilities = torch.softmax(output, dim=1)
+            predicted = torch.argmax(probabilities).item()
+            max_probability = probabilities[0][predicted].item()
+
+        return predicted, max_probability, probabilities
+
+
+    confidence = 0.9
+
+
+    test_folder = './Test'
+
+    for image in os.listdir(test_folder):
+        if image.endswith(('.jpg', '.jpeg', '.png')):
+            image_path = os.path.join(test_folder, image)
+
+            start_time = time.time()
+            #Manejar errores 
+            try:
+                predicted, max_probability, probabilities = predict_image(image_path, cnn)
+                inference_time = time.time() - start_time
+
+                # Mostrar todas las probabilidades de clases
+                print(f"Imagen: {image} -> Probabilidades:")
+                for i, class_name in enumerate(class_names):
+                    prob = probabilities[0][i].item()
+                    print(f"  {class_name}: {prob:.4f}")
+
+                if max_probability < confidence:
+                    # Si la probabilidad máxima está por debajo del umbral
+                    print(f" -> No puedo inferir sobre esta imagen. Probabilidades insuficientes (Máxima: {max_probability:.4f})")
+                else:
+                    pred = class_names[predicted]
+                    print(f" -> Inferencia: {pred} (Probabilidad: {max_probability:.4f}, Tiempo de inferencia: {inference_time:.4f} segundos)")
+                
+            except Exception as e:
+                print("Error leyendo la imagen:", e)
 
