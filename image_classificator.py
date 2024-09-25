@@ -45,7 +45,8 @@ for data in data_loader:
 
 print(labels)
 
-train_set, valid_set = random_split(dataset, (int(len(dataset) * 0.8) + 1, int(len(dataset) * 0.2)))
+train_set, test_sample = random_split(dataset, (int(len(dataset) * 0.8) + 1, int(len(dataset) * 0.2)))
+train_set, valid_set = random_split(train_set, (int(len(train_set) * 0.7) + 1, int(len(train_set) * 0.3)))
 
 #Modelo de CNN
 class CNN_Net(nn.Module):
@@ -153,6 +154,7 @@ criterion = nn.CrossEntropyLoss()
 #Uso del optimizador Adam
 optimizer = optim.Adam(parameters, lr=0.003)
 train_Model(cnn, train_loader, valid_loader, criterion, optimizer, device)
-
+accuracy(cnn, test_sample)
+accuracy_per_label(cnn, test_sample, classes, device)
 
             
