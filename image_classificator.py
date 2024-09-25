@@ -18,7 +18,7 @@ transform = transforms.Compose([transforms.Resize((224,224)),
                                                      (0.5,0.5,0.5))])
 dataset = ImageFolder('./Dataset/raw-img', transform = transform)
 classes = dataset.classes
-data_loader = DataLoader(dataset, batch_size=40, shuffle=True)
+data_loader = DataLoader(dataset, batch_size=20, shuffle=True)
 
 def imshow(img):
     img = img / 2 + 0.5
@@ -80,7 +80,7 @@ test_loader = DataLoader(test_sample, batch_size=1)
 #Entrenamiento del modelo
 def train_Model(model, train_loader, valid_loader, criterion, optimizer, device):
     total_step = len(train_loader)
-    num_epochs = 5
+    num_epochs = 10
     for epoch in range(num_epochs):
         train_loss = 0.0
         valid_loss = 0.0
@@ -106,11 +106,11 @@ def train_Model(model, train_loader, valid_loader, criterion, optimizer, device)
         print('Epoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(
           epoch, train_loss, valid_loss))
 
-def accuracy(model, test_sample, device):
+def accuracy(model, test_loader):
     correct = 0
     total = 0
-    model.to(device)
-    dataiter = iter(test_sample)
+    model.to("cpu")
+    dataiter = iter(test_loader)
     with torch.no_grad():
         for data in dataiter:
             img, label = data
@@ -121,12 +121,12 @@ def accuracy(model, test_sample, device):
     print(f"Accuracy: {100*correct / total}")
 
 
-def accuracy_per_label(model, test_sample, classes, device):
+def accuracy_per_label(model, test_loader, classes, device):
     class_correct = list(0. for i in range(10))
     class_total = list(0. for i in range(10))
     cnn.to(device)
     with torch.no_grad():
-        for data in test_sample:
+        for data in test_loader:
             images, labels = data
             images = images.to(device)
             labels = labels.to(device)
@@ -160,8 +160,11 @@ parameters = cnn.resnet.fc.parameters()
 criterion = nn.CrossEntropyLoss()
 #Uso del optimizador Adam
 optimizer = optim.Adam(parameters, lr=0.003)
-train_Model(cnn, train_loader, valid_loader, criterion, optimizer, device)
-accuracy(cnn, test_sample, device)
-accuracy_per_label(cnn, test_sample, classes, device)
+# train_Model(cnn, train_loader, valid_loader, criterion, optimizer, device)
+# torch.save(cnn.state_dict(), "cnnV2.pt") #Guardar el modelo despúes de todo el entrenamiento
+cnn.load_state_dict(torch.load('cnnV2.pt', weights_only=True))
+cnn.eval()
+accuracy(cnn, test_loader)
+accuracy_per_label(cnn, test_loader, classes, device)
 
             
