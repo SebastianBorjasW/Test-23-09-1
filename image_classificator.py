@@ -1,4 +1,5 @@
 import torch
+import os
 import torchvision
 from torchvision.datasets import ImageFolder
 from torchvision import transforms
@@ -10,6 +11,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image
 
 #Carga de imagenes 
 transform = transforms.Compose([transforms.Resize((224,224)),
@@ -154,17 +156,33 @@ class Classifier(nn.Module):
     
 
 
+
+#Realizar inferencia del modelo
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 cnn = Classifier().to(device)
-parameters = cnn.resnet.fc.parameters()
-criterion = nn.CrossEntropyLoss()
-#Uso del optimizador Adam
-optimizer = optim.Adam(parameters, lr=0.003)
-# train_Model(cnn, train_loader, valid_loader, criterion, optimizer, device)
-# torch.save(cnn.state_dict(), "cnnV2.pt") #Guardar el modelo despúes de todo el entrenamiento
 cnn.load_state_dict(torch.load('cnnV2.pt', weights_only=True))
 cnn.eval()
-accuracy(cnn, test_loader)
-accuracy_per_label(cnn, test_loader, classes, device)
 
-            
+class_names = classes
+
+
+def predict_image(image_path, model):
+    image = Image.open(image_path)
+    image = transform(image).unsqueeze(0)
+    image = image.to(device)
+
+    with torch.no_grad():
+        output = model(image)
+        _, predicted = torch.max(output, 1)
+
+    return predicted.item()
+
+
+test_folder = './Test'
+
+for image in os.listdir(test_folder):
+    if image.endswith(('.jpg', '.jpeg', '.png')):
+        image_path = os.path.join(test_folder, image)
+        predicted_class = predict_image(image_path, cnn)
+        predicted_name = class_names[predicted_class]
+        print(f"Imagen: {image} -> Inferencia: {predicted_name}")
