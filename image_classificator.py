@@ -181,7 +181,7 @@ def predict_image(image_path, model):
     return predicted, max_probability, probabilities
 
 
-confidence = 0.6
+confidence = 0.9
 
 
 test_folder = './Test'
@@ -203,11 +203,8 @@ for image in os.listdir(test_folder):
                 print(f"  {class_name}: {prob:.4f}")
 
             if max_probability < confidence:
-                suggested_classes = probabilities[0].topk(3)
-                suggested_classes_names = [class_names[i] for i in suggested_classes.indices]
-                suggested_classes_probs = suggested_classes.values.cpu().numpy()
-                suggestions = ', '.join([f"{name} ({prob:.2f})" for name, prob in zip(suggested_classes_names, suggested_classes_probs)])
-                print(f" -> Podría ser: {suggestions} (Tiempo: {inference_time:.4f} segundos)")
+                # Si la probabilidad máxima está por debajo del umbral
+                print(f" -> No puedo inferir sobre esta imagen. Probabilidades insuficientes (Máxima: {max_probability:.4f})")
             else:
                 pred = class_names[predicted]
                 print(f" -> Inferencia: {pred} (Probabilidad: {max_probability:.4f}, Tiempo de inferencia: {inference_time:.4f} segundos)")
