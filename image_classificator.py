@@ -73,13 +73,6 @@ class CNN_Net(nn.Module):
             num_features *= 1
         return num_features
     
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-cnn = CNN_Net().to(device)
-parameters = cnn.parameters()
-criterion = nn.CrossEntropyLoss()
-#Uso del optimizador Adam
-optimizer = optim.Adam(parameters, lr=0.003)
-
 #Crear DataLoaders para los sets de entrenamiento y validación
 train_loader = DataLoader(train_set, batch_size=70)
 valid_loader = DataLoader(valid_set, batch_size=1)
@@ -139,7 +132,27 @@ def accuracy_per_label(model, test_sample, classes, device):
         print(f"{classes[i]} | Correct: {class_correct[i]} | Total: {class_total[i]}" +
               f"| Accuracy: {class_correct[i] / class_total[i]}")
         
+
+#Hacer transfer learning con un modelo pre entrenado
+class Classifier(nn.Module):
+    def __init__(self):
+        super(Classifier, self).__init__()
+        self.resnet = models.resnet50(weights=ResNet50_Weights.IMAGENET1K_V2)
+        self.resnet.fc = nn.Linear(self.resnet.fc.in_features, 10)
+
+    def forward(self, image):
+        output = self.resnet(image)
+        return output
     
+
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+cnn = Classifier.to(device)
+parameters = cnn.resnet.fc.parameters()
+criterion = nn.CrossEntropyLoss()
+#Uso del optimizador Adam
+optimizer = optim.Adam(parameters, lr=0.003)
+train_Model(cnn, train_loader, valid_loader, criterion, optimizer, device)
 
 
             
