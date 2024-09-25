@@ -13,6 +13,8 @@ from torch.utils.data import DataLoader, random_split
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+from sklearn.metrics import confusion_matrix
+import seaborn as sb
 
 #Carga de imagenes 
 transform = transforms.Compose([transforms.Resize((224,224)),
@@ -176,6 +178,28 @@ def plotGraphLearning(train_losses, valid_losses):
     plt.legend()
     plt.show()
 
+def plot_confusion_matrix(model, test_loader, classes, device):
+    model.to(device)
+    all_preds = []
+    all_labels = []
+
+    with torch.no_grad():
+        for data, labels in test_loader:
+            images = data.to(device)
+            outputs = model(images)
+            _, predicted = torch.max(outputs, 1)
+            all_preds.extend(predicted.cpu().numpy())
+            all_labels.extend(labels.numpy())
+
+    cm = confusion_matrix(all_labels, all_preds)
+
+    plt.figure(figsize=(10,7))
+    sb.heatmap(cm, annot=True, fmt = 'd', cmap='Blues', xticklabels=classes, yticklabels=classes)
+    plt.title('Matriz de confusión')
+    plt.xlabel('Predicción')
+    plt.ylabel('Etiqueta')
+    plt.show()
+
 
 
 
@@ -191,7 +215,7 @@ if(YN == 'y'):
 else :
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     cnn = Classifier().to(device)
-    
+
     #Realizar inferencia del modelo
     cnn.load_state_dict(torch.load('cnnV2.pt', weights_only=True))
     cnn.eval()
@@ -212,6 +236,7 @@ else :
 
         return predicted, max_probability, probabilities
 
+  
 
     confidence = 0.9
 
@@ -243,4 +268,8 @@ else :
                 
             except Exception as e:
                 print("Error leyendo la imagen:", e)
+    
+    plot_confusion_matrix(cnn, test_loader, classes, device)
+
+    
 
