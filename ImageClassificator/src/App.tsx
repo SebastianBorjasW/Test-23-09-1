@@ -1,16 +1,23 @@
 import './App.css'
 import AI from './Pages/AiApp'
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes, BrowserRouter } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, BrowserRouter, useNavigate } from 'react-router-dom';
 import Statdistics from './Pages/Statdistics';
 import Layout from '@/layouts/Layout';
 import BasicLayout from '@/layouts/BasicLayout'
 import SidebarMenu from './components/ui/SidebarMenu';
 
+const AppRoutes = () => {
+  const navigate = useNavigate();
 
-const App: React.FC = () => {
+  useEffect(() => {
+    if(window.location.pathname == '/'){
+      navigate('/AiApp');
+    }
+  }, [navigate]);
+
   return (
-    <BrowserRouter>
+    <>
       <SidebarMenu />
       <Routes>
           <Route path="/AiApp" element={<BasicLayout />}>
@@ -20,6 +27,17 @@ const App: React.FC = () => {
             <Route index element={<Statdistics />} />
           </Route>
       </Routes>
+    </>
+  );
+
+
+};
+
+
+const App: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
     </BrowserRouter>
   );
 };

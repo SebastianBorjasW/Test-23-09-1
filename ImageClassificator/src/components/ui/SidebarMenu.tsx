@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, Home, Info} from 'lucide-react';
 import { Button } from "@/components/ui/button"
 
@@ -21,12 +21,18 @@ const LINKS = [
 
 
 export default function SidebarMenu() {
-    const { pathname } = useLocation();
-    const route = pathname.split("/")[1];
+    const location = useLocation();
+    const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
+    
     const toggleMenu = () => {
         setIsOpen(!isOpen);
     }
+
+    useEffect(() => {
+        setIsOpen(false);
+    
+    }, [location]);
 
     return(
         <div className='relative'>
@@ -45,7 +51,7 @@ export default function SidebarMenu() {
                             <Link 
                                 to={link.to}
                                 className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                                    route === link.to.split("/")[1]
+                                    location.pathname === link.to.split("/")[1]
                                       ? "bg-muted text-primary"
                                       : "text-muted-foreground"
                                   }`}
