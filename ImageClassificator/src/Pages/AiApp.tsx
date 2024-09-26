@@ -65,7 +65,7 @@ const ImageClassifier = () => {
             <button
                 onClick={classifyImage}
                 disabled={!image || isLoading}
-                className='bg-blue-800 hover:bg-blue-950 text-white font-bold py-2 px-4 rounded disabled:opacity-50'>
+                className='bg-blue-950 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50'>
                 {isLoading ? 'Clasificando...' : 'Clasificar imagen'}
             </button>
             {prediction && (
