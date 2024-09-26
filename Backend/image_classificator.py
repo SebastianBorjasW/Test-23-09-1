@@ -20,7 +20,7 @@ from matplotlib import style
 style.use('seaborn-v0_8-whitegrid')
 
 #Importar librerias para iniciar un servidor
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import logging
 import traceback
@@ -205,6 +205,11 @@ def plotGraphLearning(train_losses, valid_losses):
     plt.legend()
     plt.show()
 
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    return img
+
 def plot_confusion_matrix(model, test_loader, classes, device):
     model.to(device)
     all_preds = []
@@ -226,6 +231,11 @@ def plot_confusion_matrix(model, test_loader, classes, device):
     plt.xlabel('Predicción')
     plt.ylabel('Etiqueta')
     plt.show()
+
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    return img
 
 #Ajustar el script para usarlo en la UI
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -286,6 +296,34 @@ def predict_image():
             logger.error(f"Error durante la clasificacion: {str(e)}")
             logger.error(traceback.format_exc())
             return jsonify({'error': str(e)}), 500
+        
+@app.route('/learning_curve', methods=['GET'])
+def get_graph():
+    try:
+        device = torch.device("cuda"if torch.cuda.is_available() else "cpu")
+        cnn = Classifier().to(device)
+        criterion = nn.CrossEntropyLoss()
+        parameters = cnn.resnet.fc.parameters()
+        optimizer = optim.Adam(cnn.resnet.fc.parameters(), lr=0.003)
+        train_losses, valid_losses = train_Model(cnn, train_loader, valid_loader, criterion, optimizer, device)
+        img_buffer = plotGraphLearning(train_losses, valid_losses)
+        return send_file(img_buffer, mimetype='image/png')
+
+    except Exception as e:
+        logger.error(f"Error al generar la grafica: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+        
+
+@app.route('/confussion_matrix', methods=['GET'])
+def get_matrix():
+    try:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        cnn = Classifier().to(device)
+        img_buffer = plot_confusion_matrix(cnn, test_loader, classes, device)
+        return send_file(img_buffer, mimetype='image/png')
+    except Exception as e:
+        logger.error(f"Error al generar la matriz: {str(e)}")
+        return jsonify({'error': str(e)}), 500
         
 if __name__ == '__main__':
     app.run(debug=True)
