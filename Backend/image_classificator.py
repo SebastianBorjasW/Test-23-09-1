@@ -1,5 +1,6 @@
 #Modelo de Deep Learning 
 import torch
+import matplotlib
 import os
 import time
 import torchvision
@@ -18,6 +19,7 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sb
 from matplotlib import style
 style.use('seaborn-v0_8-whitegrid')
+matplotlib.use('Agg')
 
 #Importar librerias para iniciar un servidor
 from flask import Flask, request, jsonify, send_file
@@ -203,7 +205,7 @@ def plotGraphLearning(train_losses, valid_losses):
     plt.xlabel('Época')
     plt.ylabel('Perida')
     plt.legend()
-    plt.show()
+  
 
     img = io.BytesIO()
     plt.savefig(img, format='png')
@@ -230,7 +232,7 @@ def plot_confusion_matrix(model, test_loader, classes, device):
     plt.title('Matriz de confusión')
     plt.xlabel('Predicción')
     plt.ylabel('Etiqueta')
-    plt.show()
+    
 
     img = io.BytesIO()
     plt.savefig(img, format='png')
@@ -297,7 +299,7 @@ def predict_image():
             logger.error(traceback.format_exc())
             return jsonify({'error': str(e)}), 500
         
-@app.route('/learning_curve', methods=['GET'])
+@app.route('/Graph', methods=['GET'])
 def get_graph():
     try:
         device = torch.device("cuda"if torch.cuda.is_available() else "cpu")
@@ -314,7 +316,7 @@ def get_graph():
         return jsonify({'error': str(e)}), 500
         
 
-@app.route('/confussion_matrix', methods=['GET'])
+@app.route('/Matrix', methods=['GET'])
 def get_matrix():
     try:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
