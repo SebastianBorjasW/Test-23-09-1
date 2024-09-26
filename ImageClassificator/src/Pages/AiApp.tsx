@@ -52,7 +52,7 @@ const ImageClassifier = () => {
             <h2 className="text-2xl font-bold mb-4">Clasificador de imagenes</h2>
             <div className='grid w-full max-w-sm items-center gap-1.5'>
                 <Label htmlFor="picture">Picture</Label>
-                <Input id="piture" type="file" />
+                <Input id="piture" type="file" accept='image/*' onChange={handleImageUpload} className='mb-2'/>
             </div>
             {image && (
                 <img 

@@ -1,3 +1,4 @@
+#Modelo de Deep Learning 
 import torch
 import os
 import time
@@ -17,6 +18,23 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sb
 from matplotlib import style
 style.use('seaborn-v0_8-whitegrid')
+
+#Importar librerias para iniciar un servidor
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import logging
+import traceback
+import sys
+import io
+
+
+app = Flask(__name__)
+CORS(app)
+
+
+#Configuracion de logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 #Carga de imagenes 
 transform = transforms.Compose([transforms.Resize((224,224)),
@@ -209,78 +227,71 @@ def plot_confusion_matrix(model, test_loader, classes, device):
     plt.ylabel('Etiqueta')
     plt.show()
 
+#Ajustar el script para usarlo en la UI
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+logger.info(f"Usando: {device}")
 
+#Cargar el modelo
+try:
+    model = Classifier().to(device)
+    model.load_state_dict(torch.load('cnnv2.pt', map_location=device))
+    model.eval()
+    logger.info("Modelo cargado")
+except Exception as e:
+    logger.error(f"Error al cargar el modelo: {str(e)}")
+    logger.error(traceback.format_exc())
+    sys.exit(1)
 
+@app.route('/classify', methods=['POST'])
+def predict_image():
+    logger.info("Solicitud de clasificacion")
+    if 'file' not in request.files:
+        logger.warning("No se encontro la solicitud")
+        return jsonify({'error' : 'No file'}), 400
 
-YN = input("Entrenar el modelo? y/N ")
-if(YN == 'y'):
-    name = input("Escriba el nombre del modelo: ")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    cnn = Classifier().to(device)
-    criterion = nn.CrossEntropyLoss()
-    parameters = cnn.resnet.fc.parameters()
-    optimizer = optim.Adam(cnn.resnet.fc.parameters(), lr= 0.003)
-    train_losses, valid_losses = train_Model(cnn, train_loader, valid_loader,criterion, optimizer, device)
-    plotGraphLearning(train_losses, valid_losses)
-    torch.save(cnn.state_dict(), name)
-else :
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    cnn = Classifier().to(device)
-
-    #Realizar inferencia del modelo
-    cnn.load_state_dict(torch.load('cnnV2.pt', weights_only=True))
-    cnn.eval()
-
-    class_names = classes
-
-
-    def predict_image(image_path, model):
-        image = Image.open(image_path)
-        image = transform(image).unsqueeze(0)
-        image = image.to(device)
-
-        with torch.no_grad():
-            output = model(image)
-            probabilities = torch.softmax(output, dim=1)
-            predicted = torch.argmax(probabilities).item()
-            max_probability = probabilities[0][predicted].item()
-
-        return predicted, max_probability, probabilities
-
-  
-
-    confidence = 0.9
-
-
-    test_folder = './Test'
-
-    for image in os.listdir(test_folder):
-        if image.endswith(('.jpg', '.jpeg', '.png')):
-            image_path = os.path.join(test_folder, image)
-
-            start_time = time.time()
-            #Manejar errores 
-            try:
-                predicted, max_probability, probabilities = predict_image(image_path, cnn)
-                inference_time = time.time() - start_time
-
-                # Mostrar todas las probabilidades de clases
-                print(f"Imagen: {image} -> Probabilidades:")
-                for i, class_name in enumerate(class_names):
-                    prob = probabilities[0][i].item()
-                    print(f"  {class_name}: {prob:.4f}")
-
-                if max_probability < confidence:
-                    # Si la probabilidad máxima está por debajo del umbral
-                    print(f" -> No puedo inferir sobre esta imagen. Probabilidades insuficientes (Máxima: {max_probability:.4f})")
-                else:
-                    pred = class_names[predicted]
-                    print(f" -> Inferencia: {pred} (Probabilidad: {max_probability:.4f}, Tiempo de inferencia: {inference_time:.4f} segundos)")
-                
-            except Exception as e:
-                print("Error leyendo la imagen:", e)
+    file = request.files['file']
+    if file.filename == '':
+        logger.warning("Sin nombre de archivo")
+        return jsonify({'error' : 'No selected file'}), 400
     
-    plot_confusion_matrix(cnn, test_loader, classes, device)
+    if file:
+        try:
+            #leer la imagen
+            image_bytes = file.read()
+            image = Image.open(io.BytesIO(image_bytes)).convert('RGB')
+            logger.info(f"Imagen leida: {file.filename}")
+
+            image_tensor = transform(image).unsqueeze(0).to(device)
+            logger.info("Imagen procesada")
+
+            with torch.no_grad():
+                output = model(image_tensor)
+                probabilities = torch.softmax(output, dim=1)
+                predicted = torch.argmax(probabilities).item()
+                max_probability = probabilities[0][predicted].item()
+
+            logger.info(f"Prediccion: Clase {predicted}, probabilidad {max_probability}")
+
+            all_probabilities = probabilities[0].tolist()
+
+            return jsonify({
+                'class': classes[predicted],
+                'confidence' : max_probability,
+                'all_probabilities' : [
+                    {'class': class_name, 'probability': prob}
+                    for class_name, prob in zip(classes, all_probabilities)
+                ]
+            })
+        except Exception as e:
+            logger.error(f"Error durante la clasificacion: {str(e)}")
+            logger.error(traceback.format_exc())
+            return jsonify({'error': str(e)}), 500
+        
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
 
     
 
