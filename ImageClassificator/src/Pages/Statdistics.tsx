@@ -5,8 +5,8 @@ const Statdistics: React.FC = () => {
   return (
     <div className="statistics-container">
       <h1 className="text-2xl font-bold mb-4">Estadísticas del modelo</h1>
-      
-      <GraphsVisualization type="Matrix" title="Confusion Matrix" />
+      <GraphsVisualization type="Graph" title="Gráfica de aprendizaje" />
+      <GraphsVisualization type="Matrix" title="Matriz de confusión" />
     </div>
   );
 };
