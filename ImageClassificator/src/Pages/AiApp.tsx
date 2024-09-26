@@ -48,7 +48,8 @@ const ImageClassifier = () => {
 
 
     return (
-        <div className='max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-xl'>
+        <div className='max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-xl' 
+        style={{ backgroundColor: '#f0f0f0' }} >
             <h2 className="text-2xl font-bold mb-4">Clasificador de imagenes</h2>
             <div className='grid w-full max-w-sm items-center gap-1.5'>
                 <Label htmlFor="picture">Picture</Label>
