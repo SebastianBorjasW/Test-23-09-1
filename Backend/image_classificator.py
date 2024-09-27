@@ -298,35 +298,7 @@ def predict_image():
             logger.error(f"Error durante la clasificacion: {str(e)}")
             logger.error(traceback.format_exc())
             return jsonify({'error': str(e)}), 500
-        
-@app.route('/Graph', methods=['GET'])
-def get_graph():
-    try:
-        device = torch.device("cuda"if torch.cuda.is_available() else "cpu")
-        cnn = Classifier().to(device)
-        criterion = nn.CrossEntropyLoss()
-        parameters = cnn.resnet.fc.parameters()
-        optimizer = optim.Adam(cnn.resnet.fc.parameters(), lr=0.003)
-        train_losses, valid_losses = train_Model(cnn, train_loader, valid_loader, criterion, optimizer, device)
-        img_buffer = plotGraphLearning(train_losses, valid_losses)
-        return send_file(img_buffer, mimetype='image/png')
 
-    except Exception as e:
-        logger.error(f"Error al generar la grafica: {str(e)}")
-        return jsonify({'error': str(e)}), 500
-        
-
-@app.route('/Matrix', methods=['GET'])
-def get_matrix():
-    try:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        cnn = Classifier().to(device)
-        img_buffer = plot_confusion_matrix(cnn, test_loader, classes, device)
-        return send_file(img_buffer, mimetype='image/png')
-    except Exception as e:
-        logger.error(f"Error al generar la matriz: {str(e)}")
-        return jsonify({'error': str(e)}), 500
-        
 if __name__ == '__main__':
     app.run(debug=True)
 
