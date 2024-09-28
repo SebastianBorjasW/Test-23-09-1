@@ -45,10 +45,12 @@ transform = transforms.Compose([transforms.Resize((224,224)),
                                                      (0.5,0.5,0.5))])
 
 
+#Creacion del dataset, clases y data loaders
 dataset = ImageFolder('./Dataset/raw-img', transform = transform)
 classes = dataset.classes
 data_loader = DataLoader(dataset, batch_size=20, shuffle=True)
 
+#Mostrar imagenes del modelo
 def imshow(img):
     img = img / 2 + 0.5
     plt.imshow(np.transpose(img, (1, 2, 0)))
@@ -72,6 +74,7 @@ for data in data_loader:
     labels[classes[label.item()]] += 1
 print(labels)
 
+#Dividir entre sets de Entrenamiento, validacion y test
 train_set, test_sample = random_split(dataset, (int(len(dataset) * 0.8) + 1, int(len(dataset) * 0.2)))
 train_set, valid_set = random_split(train_set, (int(len(train_set) * 0.7) + 1, int(len(train_set) * 0.3)))
 
@@ -143,6 +146,7 @@ def train_Model(model, train_loader, valid_loader, criterion, optimizer, device)
         
     return train_losses, valid_losses
 
+#Funcion para medir precision total del modelo
 def accuracy(model, test_loader):
     correct = 0
     total = 0
@@ -157,7 +161,7 @@ def accuracy(model, test_loader):
         correct += (predicted == label).sum().item()
     print(f"Accuracy: {100*correct / total}")
 
-
+#Funcion para medir precision por clase
 def accuracy_per_label(model, test_loader, classes, device):
     class_correct = list(0. for i in range(10))
     class_total = list(0. for i in range(10))
@@ -179,7 +183,7 @@ def accuracy_per_label(model, test_loader, classes, device):
         
 
 
-#Hacer transfer learning con un modelo pre entrenado
+#Hacer transfer learning con un modelo pre entrenado resnet50
 class Classifier(nn.Module):
     def __init__(self):
         super(Classifier, self).__init__()
@@ -196,7 +200,7 @@ class Classifier(nn.Module):
         return output
     
 
-
+#Grafica de perdida y aprendizaje
 def plotGraphLearning(train_losses, valid_losses):
     plt.figure(figsize=(10,5))
     plt.plot(train_losses, label='Entrenamiento')
@@ -212,6 +216,7 @@ def plotGraphLearning(train_losses, valid_losses):
     img.seek(0)
     return img
 
+#Matriz de confusion
 def plot_confusion_matrix(model, test_loader, classes, device):
     model.to(device)
     all_preds = []
@@ -254,6 +259,7 @@ except Exception as e:
     logger.error(traceback.format_exc())
     sys.exit(1)
 
+#Endpoint para realizar inferencia de la imagen cargada
 @app.route('/classify', methods=['POST'])
 def predict_image():
     logger.info("Solicitud de clasificacion")
@@ -296,7 +302,8 @@ def predict_image():
             ]
 
             class_probabilities.sort(key=lambda x: x['probability'], reverse=True)
-
+            
+            #Respuesta del API con datos de inferencia y probabilidades
             response = {
                 'predicted_class': classes[predicted],
                 'max_probability': max_probability,
@@ -304,7 +311,7 @@ def predict_image():
                 'class_probability': class_probabilities
             }
 
-
+            #Umbral de confidencia 
             confidence = 0.9
             if max_probability < confidence:
                 response['Warning'] = 'Probabilidad baja para inferir correctamente'
@@ -315,6 +322,7 @@ def predict_image():
             logger.error(f"Error durante la clasificacion: {str(e)}")
             logger.error(traceback.format_exc())
             return jsonify({'error': str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
