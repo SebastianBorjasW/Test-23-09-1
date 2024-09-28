@@ -1,68 +1,64 @@
 # Test-23-09-1
 
-### Descripción:
+# Descripción 
+Este proyecto es un modelo de Deep learning creado a base del modelo pre entrenado ResNet50 de la librería de PyTorch, este modelo fue creado para clasificación de imágenes de animales. El proyecto cuenta con una UI en forma de webapp donde se puede cargar imágenes de animales y que el modelo infiera dentro de los animales que conoce (Mariposas, gatos, gallinas, vacas, elefantes, perros, caballos, ovejas, arañas y ardillas). La webapp incluye las gráficas de perdida y precisión durante el entrenamiento y la matriz de confusión del modelo. 
 
-Se le solicita desarrollar un programa en Python que clasifique imágenes en al menos tres categorías diferentes utilizando técnicas de Transfer Learning con modelos pre-entrenados de Deep Learning. El objetivo es construir un modelo que pueda reconocer y clasificar nuevas imágenes con una precisión razonable.
 
-### Requisitos:
+## Desarrollo
 
-#### Selección del Conjunto de Datos:
+### Pre requisitos
+-[CUDA (En caso de tener un equipo con GPU CUDA)](https://developer.nvidia.com/cuda-toolkit)
+-[Python](https://www.python.org/)
+-[Git](https://git-scm.com/)
+-[VsCode](https://code.visualstudio.com/)
 
-Puede utilizar conjuntos de datos públicos como:
-Kaggle Datasets: Animals-10 Dataset (contiene imágenes de 10 tipos de animales).
-Conjunto de Datos Personalizado: Puede recopilar imágenes de tres categorías a su elección (por ejemplo, gatos, perros y pájaros).
-Asegúrese de tener un conjunto equilibrado de imágenes para cada categoría.
 
-#### Preprocesamiento de Datos:
+### Inicio de instalación
 
-Organizar las imágenes en directorios separados por clase para facilitar la carga y etiquetado.
-Aplicar técnicas de aumento de datos (data augmentation) como rotación, volteo y escalado para aumentar la variedad del conjunto de datos.
-Redimensionar las imágenes a un tamaño adecuado para el modelo pre-entrenado seleccionado (por ejemplo, 224x224 píxeles).
-Implementación del Modelo:
+1. Instalar
+Para instalar Pytorch en Windows y Linux use el siguiente comando
+```bash
+pip3 install torch torchvision torchaudio
 
-#### Utilizar un modelo pre-entrenado disponible en Keras o PyTorch:
+#Si se tiene una GPU con CUDA cores
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+``` 
 
-Congelar las capas del modelo pre-entrenado y agregar capas densas adicionales para adaptarlo a su problema de clasificación.
-Compilar el modelo con una función de pérdida adecuada (por ejemplo, categorical_crossentropy) y un optimizador como Adam.
-Entrenamiento y Validación:
+En MacOS usar el siguiente comando
+```bash
+#En MacOS se usará el CPU ya que CUDA no esta disponible
+pip3 install torch torchvision torchaudio
+``` 
 
-Dividir el conjunto de datos en conjuntos de entrenamiento y validación (por ejemplo, 80% entrenamiento y 20% validación).
-Entrenar el modelo y monitorear la precisión y la pérdida en ambos conjuntos.
-Ajustar hiperparámetros como la tasa de aprendizaje y el número de épocas para mejorar el rendimiento.
 
-#### Evaluación del Modelo:
+Instalar flask
+```bash
+pip install flask
+```
 
-Evaluar el modelo utilizando métricas como:
-Precisión (Accuracy)
-Generar gráficos que muestren:
-La curva de precisión y pérdida durante el entrenamiento.
-La matriz de confusión para visualizar el rendimiento por clase.
+2. Clonar el repositorio
+```bash
+git clone https://github.com/SebastianBorjasW/Test-23-09-1.git
+```
 
-#### Prueba con Nuevas Imágenes:
+3. Cambiar al directorio del proyecto
+```bash
+code Test-23-09-1
+```
 
-Probar el modelo con imágenes nuevas que no formen parte del conjunto de datos utilizado.
-Mostrar las predicciones y la probabilidad asociada a cada clase.
+4. Instalar las dependencias
+```bash
+cd ImageClassificator
+npm install
+```
 
-### Entregable
+5. Iniciar el proyecto
+```bash
+cd ImageClassificator
+npm run dev
+```
 
-Grabar un video (máximo 5 minutos) mostrando:
-La explicación del enfoque y las decisiones tomadas.
-El código fuente y su estructura.
-La ejecución del programa y demostración de su funcionamiento con diferentes imágenes.
-Los resultados obtenidos y conclusiones.
-
-### Entrega:
-
-Código fuente bien organizado y documentado.
-Archivo README con instrucciones para ejecutar el programa y explicaciones adicionales si es necesario.
-El video de demostración en un formato común (por ejemplo, MP4, AVI).
-
-Asegúrese de que el código sea reproducible; incluya instrucciones claras sobre cómo instalar dependencias y ejecutar el programa.
-Si utiliza notebooks de Jupyter, proporcione el archivo .ipynb y exporte una versión en HTML o PDF.
-
-#### Consejos:
-
-Comience por explorar y comprender el conjunto de datos elegido.
-Verifique que las imágenes estén correctamente etiquetadas y organizadas.
-Realice pruebas con una pequeña parte del conjunto de datos para agilizar el proceso de desarrollo.
-Documente las decisiones tomadas y los desafíos encontrados durante el desarrollo.
+```bash
+cd Backend
+python image_classificator.py
+```
