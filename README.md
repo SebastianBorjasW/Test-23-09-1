@@ -35,40 +35,39 @@ En MacOS usar el siguiente comando
 pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cpu
 ``` 
 
- 3. Instalar librerías de Python
+3. Clonar el repositorio
+```bash
+git clone https://github.com/SebastianBorjasW/Test-23-09-1.git
+```
+
+4. Instalar librerías de Python
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Añadir archivo `.env` con las siguientes variables
+5. Añadir archivo `.env` dentro del directorio Backend con las siguientes variables
 ```bash
 FLASK_APP=image_classificator.py
 FLASK_ENV=development
 ```
 
-5. Clonar el repositorio
-```bash
-git clone https://github.com/SebastianBorjasW/Test-23-09-1.git
-```
-
-1. Cambiar al directorio del proyecto
+6. Cambiar al directorio del proyecto
 ```bash
 code Test-23-09-1
 ```
 
-1. Instalar las dependencias
+7. Instalar las dependencias
 ```bash
 cd ImageClassificator
 npm install
 ```
 
-1. Iniciar el proyecto
+8. Iniciar el proyecto
 ```bash
 cd ImageClassificator
 npm run dev
 ```
-
 ```bash
 cd Backend
-python image_classificator.py
+flask run
 ```
