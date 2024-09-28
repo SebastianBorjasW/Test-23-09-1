@@ -246,7 +246,7 @@ logger.info(f"Usando: {device}")
 #Cargar el modelo
 try:
     model = Classifier().to(device)
-    model.load_state_dict(torch.load('cnnv2.pt', map_location=device))
+    model.load_state_dict(torch.load('cnnV5.pt', map_location=device))
     model.eval()
     logger.info("Modelo cargado")
 except Exception as e:
@@ -276,24 +276,41 @@ def predict_image():
             image_tensor = transform(image).unsqueeze(0).to(device)
             logger.info("Imagen procesada")
 
+            start_time = time.time()
             with torch.no_grad():
                 output = model(image_tensor)
                 probabilities = torch.softmax(output, dim=1)
                 predicted = torch.argmax(probabilities).item()
                 max_probability = probabilities[0][predicted].item()
 
+            inference_time = time.time() - start_time
+
             logger.info(f"Prediccion: Clase {predicted}, probabilidad {max_probability}")
 
             all_probabilities = probabilities[0].tolist()
 
-            return jsonify({
-                'class': classes[predicted],
-                'confidence' : max_probability,
-                'all_probabilities' : [
-                    {'class': class_name, 'probability': prob}
-                    for class_name, prob in zip(classes, all_probabilities)
-                ]
-            })
+            #Probabilidades por clase
+            class_probabilities = [
+                {'class': class_name, 'probability': prob}
+                for class_name, prob in zip(classes, all_probabilities)
+            ]
+
+            class_probabilities.sort(key=lambda x: x['probability'], reverse=True)
+
+            response = {
+                'predicted_class': classes[predicted],
+                'max_probability': max_probability,
+                'inference_time': inference_time,
+                'class_probability': class_probabilities
+            }
+
+
+            confidence = 0.9
+            if max_probability < confidence:
+                response['Warning'] = 'Probabilidad baja para inferir correctamente'
+
+           
+            return jsonify(response)
         except Exception as e:
             logger.error(f"Error durante la clasificacion: {str(e)}")
             logger.error(traceback.format_exc())
