@@ -14,9 +14,9 @@ Este proyecto es un modelo de Deep learning creado a base del modelo pre entrena
 - [Dataset](https://www.kaggle.com/datasets/alessiocorrado99/animals10)
 
 
-### Inicio de instalación
+### Instalación
 1. Agrega Dataset
-Debido al peso de las todas las imágenes del dataset requerido, se necesitan descargar de la liga https://www.kaggle.com/datasets/alessiocorrado99/animals10 y posteriomente agregar a la carpeta "Dataset", de forma de que la ruta quede de la siguiente forma
+Debido al peso de las todas las imágenes del dataset requerido, se necesitan descargar de la liga https://www.kaggle.com/datasets/alessiocorrado99/animals10 y posteriomente agregar a la carpeta "Dataset", de forma de que la ruta quede de la siguiente forma:
 ```bash
 Backend/Dataset/raw-img/...
 ``` 
@@ -35,33 +35,34 @@ En MacOS usar el siguiente comando
 pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cpu
 ``` 
 
-
-Instalar las siguientes librerías en Python
+ 3. Instalar librerías de Python
 ```bash
-pip3 install flask
-pip3 install matplotlib
-pip3 install flask-cors
-pip3 install scikit-learn
-pip3 install seaborn
+pip install -r requirements.txt
 ```
 
-2. Clonar el repositorio
+4. Añadir archivo `.env` con las siguientes variables
+```bash
+FLASK_APP=image_classificator.py
+FLASK_ENV=development
+```
+
+5. Clonar el repositorio
 ```bash
 git clone https://github.com/SebastianBorjasW/Test-23-09-1.git
 ```
 
-3. Cambiar al directorio del proyecto
+1. Cambiar al directorio del proyecto
 ```bash
 code Test-23-09-1
 ```
 
-4. Instalar las dependencias
+1. Instalar las dependencias
 ```bash
 cd ImageClassificator
 npm install
 ```
 
-5. Iniciar el proyecto
+1. Iniciar el proyecto
 ```bash
 cd ImageClassificator
 npm run dev
