@@ -16,12 +16,13 @@ Este proyecto es un modelo de Deep learning creado a base del modelo pre entrena
 
 ### Instalación
 1. Agrega Dataset
+
 Debido al peso de las todas las imágenes del dataset requerido, se necesitan descargar de la liga https://www.kaggle.com/datasets/alessiocorrado99/animals10 y posteriomente agregar a la carpeta "Dataset", de forma de que la ruta quede de la siguiente forma:
 ```bash
 Backend/Dataset/raw-img/...
 ``` 
 
-2. Instalar
+1. Instalar
 Para instalar Pytorch en Windows y Linux use el siguiente comando
 ```bash
 pip3 install torch torchvision torchaudio
