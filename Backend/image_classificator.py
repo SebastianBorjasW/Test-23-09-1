@@ -166,13 +166,13 @@ def accuracy(model, test_loader):
 def accuracy_per_label(model, test_loader, classes, device):
     class_correct = list(0. for i in range(10))
     class_total = list(0. for i in range(10))
-    cnn.to(device)
+    model.to(device)
     with torch.no_grad():
         for data in test_loader:
             images, labels = data
             images = images.to(device)
             labels = labels.to(device)
-            outputs = cnn(images)
+            outputs = model(images)
             _, predicted = torch.max(outputs, 1)
             c = (predicted == labels).squeeze()
             if(c.item()):
