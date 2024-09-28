@@ -1,0 +1,7 @@
+Flask
+Flask-cors
+matplotlib
+seaborn
+scikit-learn
+Pillow
+python-dotenv
