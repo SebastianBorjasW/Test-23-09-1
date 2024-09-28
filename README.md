@@ -7,10 +7,10 @@ Este proyecto es un modelo de Deep learning creado a base del modelo pre entrena
 ## Desarrollo
 
 ### Pre requisitos
--[CUDA (En caso de tener un equipo con GPU CUDA)](https://developer.nvidia.com/cuda-toolkit)
--[Python](https://www.python.org/)
--[Git](https://git-scm.com/)
--[VsCode](https://code.visualstudio.com/)
+- [CUDA (En caso de tener un equipo con GPU CUDA)](https://developer.nvidia.com/cuda-toolkit)
+- [Python](https://www.python.org/)
+- [Git](https://git-scm.com/)
+- [VsCode](https://code.visualstudio.com/)
 
 
 ### Inicio de instalación
