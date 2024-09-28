@@ -40,11 +40,14 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 #Carga de imagenes 
-transform = transforms.Compose([transforms.Resize((224,224)),
-                                transforms.ToTensor(),
-                                transforms.Normalize((0.5,0.5,0.5),
-                                                     (0.5,0.5,0.5))])
-
+transform = transforms.Compose([
+    transforms.RandomHorizontalFlip(p=0.5),  # Flip horizontal aleatorio
+    transforms.RandomRotation(degrees=15),  # Rotación aleatoria entre -15 y 15 grados
+    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  # Ajustes de brillo, contraste, saturación y tono
+    transforms.Resize((224, 224)),  # Redimensionar la imagen
+    transforms.ToTensor(),  # Convertir a tensor
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # Normalizar
+])
 
 #Creacion del dataset, clases y data loaders
 dataset = ImageFolder('./Dataset/raw-img', transform = transform)
