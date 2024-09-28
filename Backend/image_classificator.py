@@ -1,4 +1,5 @@
 #Modelo de Deep Learning 
+from dotenv import load_dotenv
 import torch
 import matplotlib
 import os
@@ -29,7 +30,7 @@ import traceback
 import sys
 import io
 
-
+load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
